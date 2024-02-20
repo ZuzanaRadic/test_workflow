@@ -1,148 +1,170 @@
-name: Deploy terraform 
+name: Deploy terraform
 
-on: 
-    workflow_dispatch:
-    push:
-        branches:
-            - master
-            - production
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - production
 
 jobs:
-#--------------------------------------------------------------------------------------------------------------
-# Plan steps
-#---------------------------------------------------------------------------------------------------------------
-    plan_stg:
-        name: "Staging Plan"
-        runs-on: ubuntu-latest
-        environment: 
-            name: plan-staging 
-        steps: 
-            - name: Checkout repo
-              uses: actions/checkout@v3
+  #--------------------------------------------------------------------------------------------------------------
+  # Plan steps
+  #---------------------------------------------------------------------------------------------------------------
+  plan_stg:
+    name: "Staging Plan"
+    runs-on: ubuntu-latest
+    environment:
+      name: plan-staging
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with: 
-                aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
-                aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-                aws-region: eu-central-1
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                terraform_version: "1.1.7"
-            - name: Terraform Init 
-              run: terraform init
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
+          aws-region: eu-central-1
 
-            - name: Terraform Plan
-              id: plan
-              working-directory: .
-              run: |
-                echo 'plan<<EOF' >> $GITHUB_OUTPUT
-                terraform plan -no-color -var-file="vars_stg.tfvars" -out=plan >> $GITHUB_OUTPUT
-                echo 'EOF' >> $GITHUB_OUTPUT
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.7"
 
-            - name: Archive plan
-              uses: actions/upload-artifact@v4
-              with:
-                name: "stg-plan"
-                path: ./plan
+      - name: Terraform Init
+        run: terraform init
 
-    plan_prod:
-        name: "Production Plan"
-        runs-on: ubuntu-latest
-        environment:
-            name:   plan-production
+      - name: Terraform Plan
+        id: plan
+        working-directory: .
+        run: |
+          echo 'plan<<EOF' >> $GITHUB_OUTPUT
+          terraform plan -no-color -var-file="vars_stg.tfvars" -out=plan >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
-        steps: 
-            - name: Checkout repo
-              uses: actions/checkout@v3
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "stg-plan"
+          path: ./plan
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with: 
-                aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
-                aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-                aws-region: eu-central-1
+  plan_prod:
+    name: "Production Plan"
+    runs-on: ubuntu-latest
+    environment:
+      name: plan-production
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                terraform_version: "1.1.7"
-            
-            - name: Terraform Init 
-              run: terraform init
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-            - name: Terraform Plan
-              run: terraform plan -no-color -var-file="vars_prod.tfvars"
-#--------------------------------------------------------------------------------------------------------------
-# Deploy steps
-#--------------------------------------------------------------------------------------------------------------
-    deploy_stg:
-        name: "Staging Deployment"
-        runs-on: ubuntu-latest
-        needs: "plan_stg" 
-        if: github.ref == 'refs/heads/master'
-        environment: 
-            name: apply-staging
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
+          aws-region: eu-central-1
 
-        steps: 
-            - name: Checkout repo
-              uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.7"
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with: 
-                aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
-                aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-                aws-region: eu-central-1
+      - name: Terraform Init
+        run: terraform init
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                terraform_version: "1.1.7" 
-            
-            - name: Terraform Init 
-              run: terraform init
-            
-            - name: Download plan artifact
-              uses: actions/download-artifact@v4
-              with:
-                name: "stg-plan"
-                path: ./
+      - name: Terraform Plan
+        id: plan
+        working-directory: .
+        run: |
+          echo 'plan<<EOF' >> $GITHUB_OUTPUT
+          terraform plan -no-color -var-file="vars_prod.tfvars" -out=plan >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
-            - name: Terraform Apply
-              run: | 
-                echo 'apply<<EOF' >> $GITHUB_OUTPUT
-                terraform apply -input=false -no-color plan >> $GITHUB_OUTPUT
-                echo 'EOF' >> $GITHUB_OUTPUT
-              
-    deploy_prod:
-        name: "Production Deployment"
-        runs-on: ubuntu-latest
-        needs: "plan_prod" 
-        if: github.ref == 'refs/heads/production'
-        environment: 
-            name: apply-production
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "prod-plan"
+          path: ./plan
+    #--------------------------------------------------------------------------------------------------------------
+    # Deploy steps
+    #--------------------------------------------------------------------------------------------------------------
+  deploy_stg:
+    name: "Staging Deployment"
+    runs-on: ubuntu-latest
+    needs: "plan_stg"
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: apply-staging
 
-        steps: 
-            - name: Checkout repo
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with: 
-                aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
-                aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-                aws-region: eu-central-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
+          aws-region: eu-central-1
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                terraform_version: "1.1.7" 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.7"
 
-            - name: Terraform Init 
-              run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-            - name: Terraform Apply
-              run: terraform apply -var-file="vars_prod.tfvars"
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "stg-plan"
+          path: ./
+
+      - name: Terraform Apply
+        run: |
+          echo 'apply<<EOF' >> $GITHUB_OUTPUT
+          terraform apply -input=false -no-color plan >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+  deploy_prod:
+    name: "Production Deployment"
+    runs-on: ubuntu-latest
+    needs: "plan_prod"
+    if: github.ref == 'refs/heads/production'
+    environment:
+      name: apply-production
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
+          aws-region: eu-central-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.1.7"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "prod-plan"
+          path: ./
+
+      - name: Terraform Apply
+        run: |
+          echo 'apply<<EOF' >> $GITHUB_OUTPUT
+          terraform apply -input=false -no-color plan >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
