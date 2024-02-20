@@ -7,8 +7,8 @@ on:
             - master
             - production
 env:
-    OUTPUT_DIRECTORY: ${{github.workspace}}\bin\
-    
+    OUTPUT_DIRECTORY: ${{github.workspace}}\
+
 jobs:
 #--------------------------------------------------------------------------------------------------------------
 # Plan steps
