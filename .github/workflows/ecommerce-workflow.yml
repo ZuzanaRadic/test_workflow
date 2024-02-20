@@ -35,13 +35,18 @@ jobs:
               run: terraform init
 
             - name: Terraform Plan
-              run: terraform plan -no-color -var-file="vars_stg.tfvars"
+              id: plan
+              working-directory: .
+              run: |
+                echo 'plan<<EOF' >> $GITHUB_OUTPUT
+                terraform plan -no-color -var-file="vars_stg.tfvars" -out=plan >> $GITHUB_OUTPUT
+                echo 'EOF' >> $GITHUB_OUTPUT
 
             - name: Archive plan
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
-                name: plan.txt
-                path: plan
+                name: "${var.env_name}-plan"
+                path: ./
 
     plan_prod:
         name: "Production Plan"
@@ -103,7 +108,7 @@ jobs:
             - name: Download plan artifact
               uses: actions/download-artifact@v4
               with:
-                name: plan.txt
+                name: "${var.env_name}-plan"
 
             - name: Terraform Apply
               run: terraform apply -var-file="vars_stg.tfvars"
