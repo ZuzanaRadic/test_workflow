@@ -43,7 +43,7 @@ jobs:
                 echo 'EOF' >> $GITHUB_OUTPUT
 
             - name: Archive plan
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: "stg-plan"
                 path: ./
