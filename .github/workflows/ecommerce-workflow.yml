@@ -45,7 +45,7 @@ jobs:
             - name: Archive plan
               uses: actions/upload-artifact@v3
               with:
-                name: "${var.env_name}-plan"
+                name: "stg-plan"
                 path: ./
 
     plan_prod:
@@ -108,7 +108,7 @@ jobs:
             - name: Download plan artifact
               uses: actions/download-artifact@v4
               with:
-                name: "${var.env_name}-plan"
+                name: "stg-plan"
 
             - name: Terraform Apply
               run: | 
