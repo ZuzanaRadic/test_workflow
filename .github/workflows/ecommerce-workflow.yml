@@ -6,7 +6,9 @@ on:
         branches:
             - master
             - production
-
+env:
+    OUTPUT_DIRECTORY: ${{github.workspace}}\bin\
+    
 jobs:
 #--------------------------------------------------------------------------------------------------------------
 # Plan steps
@@ -41,7 +43,7 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                 name: plan.txt
-                path: plan
+                path: ${{env.OUTPUT_DIRECTORY}}
 
     plan_prod:
         name: "Production Plan"
