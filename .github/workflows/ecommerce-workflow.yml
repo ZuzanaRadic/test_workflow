@@ -40,8 +40,8 @@ jobs:
             - name: Archive plan
               uses: actions/upload-artifact@v2
               with:
-                name: plan
-                path: plan.txt
+                name: plan.txt
+                path: plan
 
     plan_prod:
         name: "Production Plan"
