@@ -35,12 +35,14 @@ jobs:
               run: terraform init
 
             - name: Terraform Plan
-              id: plan
               run: terraform plan -no-color -var-file="vars_stg.tfvars"
 
-            - name: Outputs plan
-              run: echo ${{ steps.plan.outputs.stdout }}  
-            
+            - name: Archive plan
+              uses: actions/upload-artifact@v2
+              with:
+                name: plan
+                path: plan.txt
+
     plan_prod:
         name: "Production Plan"
         runs-on: ubuntu-latest
@@ -97,6 +99,11 @@ jobs:
             
             - name: Terraform Init 
               run: terraform init
+            
+            - name: Download plan artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: plan.txt
 
             - name: Terraform Apply
               run: terraform apply -var-file="vars_stg.tfvars"
