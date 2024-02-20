@@ -25,7 +25,7 @@ jobs:
               with: 
                 aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
                 aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-                aws-region: us-east-1
+                aws-region: eu-central-1
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
@@ -60,7 +60,7 @@ jobs:
               with: 
                 aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
                 aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-                aws-region: us-east-1
+                aws-region: eu-central-1
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
@@ -92,7 +92,7 @@ jobs:
               with: 
                 aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
                 aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-                aws-region: us-east-1
+                aws-region: eu-central-1
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
@@ -122,7 +122,7 @@ jobs:
               with: 
                 aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
                 aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-                aws-region: us-east-1
+                aws-region: eu-central-1
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
