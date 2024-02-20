@@ -114,7 +114,7 @@ jobs:
             - name: Terraform Apply
               run: | 
                 echo 'apply<<EOF' >> $GITHUB_OUTPUT
-                terraform apply -input=false -no-color -var-file="vars_stg.tfvars" plan >> $GITHUB_OUTPUT
+                terraform apply -input=false -no-color plan >> $GITHUB_OUTPUT
                 echo 'EOF' >> $GITHUB_OUTPUT
               
     deploy_prod:
