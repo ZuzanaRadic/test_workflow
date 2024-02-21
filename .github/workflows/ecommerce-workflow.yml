@@ -3,17 +3,17 @@ name: Deploy terraform
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
-      - production
 
 jobs:
-  #--------------------------------------------------------------------------------------------------------------
-  # Plan steps
-  #---------------------------------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------------------------------
+# Terraform plan jobs
+#---------------------------------------------------------------------------------------------------------------
+
   plan_stg:
     name: "Staging Plan"
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     environment:
       name: plan-staging
 
@@ -53,6 +53,7 @@ jobs:
   plan_prod:
     name: "Production Plan"
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/production'
     environment:
       name: plan-production
 
@@ -88,9 +89,11 @@ jobs:
         with:
           name: "prod-plan"
           path: ./plan
-    #--------------------------------------------------------------------------------------------------------------
-    # Deploy steps
-    #--------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------
+# Terraform deploy jobs
+#--------------------------------------------------------------------------------------------------------------
+
   deploy_stg:
     name: "Staging Deployment"
     runs-on: ubuntu-latest
@@ -122,7 +125,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: "stg-plan"
-          path: ./
 
       - name: Terraform Apply
         run: |
@@ -161,7 +163,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: "prod-plan"
-          path: ./
 
       - name: Terraform Apply
         run: |
