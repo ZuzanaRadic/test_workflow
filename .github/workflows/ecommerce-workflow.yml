@@ -8,7 +8,7 @@ on:
   push:
 env:
   project: "test"
-  region: "eu-central-1"
+
 jobs:
 
 #---------------------------------------------------------------------------------------------------------------
@@ -18,6 +18,8 @@ jobs:
   plan_stg:
     name: "Staging Plan"
     runs-on: ubuntu-latest
+    container:
+      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     if: github.ref == 'refs/heads/master'
     environment:
       name: plan-staging
@@ -64,6 +66,8 @@ jobs:
   plan_prod:
     name: "Production Plan"
     runs-on: ubuntu-latest
+    container:
+      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     if: github.ref == 'refs/heads/production'
     environment:
       name: plan-production
@@ -111,6 +115,8 @@ jobs:
   deploy_stg:
     name: "Staging Deployment"
     runs-on: ubuntu-latest
+    container:
+      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     needs: "plan_stg"
     if: github.ref == 'refs/heads/master'
     environment:
@@ -149,6 +155,8 @@ jobs:
   deploy_prod:
     name: "Production Deployment"
     runs-on: ubuntu-latest
+    container:
+      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     needs: "plan_prod"
     if: github.ref == 'refs/heads/production'
     environment:
