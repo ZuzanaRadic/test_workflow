@@ -42,10 +42,8 @@ jobs:
     environment:
       name: ${{matrix.environment}}
     env: 
-      AWS_ACCESS_KEY_ID_STG: ${{vars[matrix.aws-access-key-id]}}
-      AWS_SECRET_KEY_STG: ${{secrets[matrix.aws-secret-access-key]}}
-      AWS_ACCESS_KEY_ID_PROD: ${{vars[matrix.aws-access-key-id]}}
-      AWS_SECRET_KEY_PROD: ${{secrets[matrix.aws-secret-access-key]}}
+      AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
+      AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
 
     steps:
 
@@ -60,8 +58,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{env.ACCESS_KEY_ID_STG}}
-          aws-secret-access-key: ${{env.AWS_SECRET_KEY_STG}}
+          aws-access-key-id: ${{env.ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{env.AWS_SECRET_KEY}}
           aws-region: eu-central-1
                   
       - name: Terraform Init
