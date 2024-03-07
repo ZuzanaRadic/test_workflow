@@ -44,6 +44,8 @@ jobs:
     env: 
       AWS_ACCESS_KEY_ID_STG: ${{vars[matrix.aws-access-key-id]}}
       AWS_SECRET_KEY_STG: ${{secrets[matrix.aws-secret-access-key]}}
+      AWS_ACCESS_KEY_ID_PROD: ${{vars[matrix.aws-access-key-id]}}
+      AWS_SECRET_KEY_PROD: ${{secrets[matrix.aws-secret-access-key]}}
 
     steps:
 
