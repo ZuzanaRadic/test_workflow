@@ -266,7 +266,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-    needs: "plan_stg"
     if: github.ref == 'refs/heads/master'
     environment:
       name: apply-staging
@@ -306,7 +305,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-    needs: "plan_prod"
     if: github.ref == 'refs/heads/production'
     environment:
       name: apply-production
