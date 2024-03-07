@@ -14,31 +14,33 @@ jobs:
 #---------------------------------------------------------------------------------------------------------------
 # Terraform plan jobs
 #---------------------------------------------------------------------------------------------------------------
-  plan_stg_and_prod:
+  plan:
     name: "Staging and Production plan"
     runs-on: ubuntu-latest
     container:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     strategy:
       matrix:
-        name: ["staging", "production"]
-        bucket_name: ["grocekeystaging-terraform-state", "grocekey-terraform-state"]
-        project: ["test", "test"]
         include:
           - aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: "plan-staging"
-            if: github.ref == 'refs/heads/master'
+            branch: 
+              - ${{github.ref == 'refs/heads/master'}}
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
           - aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: "plan-production"
-            if: github.ref == 'refs/heads/production'
+            branch: 
+              - ${{github.ref == 'refs/heads/production'}}
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/production'
+    environment:
+      name: ${{matrix.environment}}
     env: 
       AWS_ACCESS_KEY_ID_STG: ${{vars[matrix.aws-access-key-id]}}
       AWS_SECRET_KEY_STG: ${{secrets[matrix.aws-secret-access-key]}}
@@ -264,6 +266,7 @@ jobs:
   deploy_stg:
     name: "Staging Deployment"
     runs-on: ubuntu-latest
+    needs: plan
     container:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     if: github.ref == 'refs/heads/master'
@@ -303,6 +306,7 @@ jobs:
   deploy_prod:
     name: "Production Deployment"
     runs-on: ubuntu-latest
+    needs: plan
     container:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     if: github.ref == 'refs/heads/production'
