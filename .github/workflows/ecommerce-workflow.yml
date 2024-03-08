@@ -40,7 +40,6 @@ jobs:
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/production'
     environment:
       name: ${{matrix.environment}}
     env: 
