@@ -25,20 +25,18 @@ jobs:
           - aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: "plan-staging"
-            branch: 
-              - ${{github.ref == 'refs/heads/master'}}
+            branch: "refs/heads/master"
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
           - aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: "plan-production"
-            branch: 
-              - ${{github.ref == 'refs/heads/production'}}
+            branch: "refs/heads/production"
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/production'
+    if: github.ref == 'matrix.branch'
     environment:
       name: ${{matrix.environment}}
     env: 
