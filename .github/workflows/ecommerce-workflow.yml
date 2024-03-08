@@ -21,22 +21,25 @@ jobs:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     strategy:
       matrix:
+        isMaster:
+          - ${{ github.ref == 'refs/heads/master' }}
+        isProduction:
+          - ${{ github.ref == 'refs/heads/production' }}
         include:
-          - aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
+          - { isMaster: true }
+            aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: "plan-staging"
-            branch: "refs/heads/master"
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
-          - aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
+          - { isProduction: true}
+            aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: "plan-production"
-            branch: "refs/heads/production"
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
-    if: github.ref == 'matrix.branch'
     environment:
       name: ${{matrix.environment}}
     env: 
