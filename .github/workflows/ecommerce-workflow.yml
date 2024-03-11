@@ -23,14 +23,12 @@ jobs:
           - [github.ref == 'refs/heads/production', github.ref == 'refs/heads/master']
         include:
           - environment: "plan-staging"
-            isProduction: "github.ref == 'refs/heads/master'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
           - environment: "plan-production"
-            isProduction: "github.ref == 'refs/heads/production'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             name: "production"
