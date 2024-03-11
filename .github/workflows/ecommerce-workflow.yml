@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         isProduction: 
-          - [github.ref == 'refs/heads/production', github.ref == 'refs/heads/master']
+          - ["github.ref == 'refs/heads/production'", "github.ref == 'refs/heads/master'"]
         include:
           - environment: "plan-staging"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
@@ -35,7 +35,7 @@ jobs:
             bucket_name: "grocekey-terraform-state"
             project: "test"
         exclude:
-          - isProduction: ["github.ref == 'refs/heads/production', github.ref == 'refs/heads/master'"]
+          - isProduction: ["github.ref == 'refs/heads/production'", "github.ref == 'refs/heads/master'"]
               
 
     environment:
