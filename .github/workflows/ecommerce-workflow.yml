@@ -37,8 +37,8 @@ jobs:
             bucket_name: "grocekey-terraform-state"
             project: "test"
         exclude:
-          - isProduction: ${{ github.ref == 'refs/heads/production' }}
-          - isStaging: ${{ github.ref == 'refs/heads/master' }}
+          - isProduction: ${{ github.ref == 'refs/heads/production' && github.env == 'plan-production'}}
+          - isStaging: ${{ github.ref == 'refs/heads/master' && github.env == 'plan-staging'}}
           - isProduction: false
           - isStaging: false
             
