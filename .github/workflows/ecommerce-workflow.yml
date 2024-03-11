@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         isProduction: 
-          - ${{ github.ref == 'refs/heads/production' || github.ref == 'refs/heads/master' }}
+          - [github.ref == 'refs/heads/production', github.ref == 'refs/heads/master']
         include:
           - environment: "plan-staging"
             isProduction: "github.ref == 'refs/heads/master'"
