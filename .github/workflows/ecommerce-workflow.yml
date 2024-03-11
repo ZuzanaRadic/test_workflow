@@ -39,6 +39,8 @@ jobs:
         exclude:
           - isProduction: ${{ github.ref == 'refs/heads/production' }}
           - isStaging: ${{ github.ref == 'refs/heads/master' }}
+          - isProduction: false
+          - isStaging: false
             
 
     environment:
