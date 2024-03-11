@@ -24,7 +24,8 @@ jobs:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     strategy:
       matrix:
-        isProduction: ${{github.ref == 'refs/heads/production'}}
+        isProduction: 
+          - ${{github.ref == 'refs/heads/production'}}
         include:
           - environment: "plan-staging"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
