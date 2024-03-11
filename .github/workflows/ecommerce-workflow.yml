@@ -26,15 +26,13 @@ jobs:
       matrix:
         isProduction: ${{github.ref == 'refs/heads/production'}}
         include:
-          - isProduction: "github.ref == 'refs/heads/master'"
-            environment: "plan-staging"
+          - environment: "plan-staging"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
-          - isProduction: "github.ref == 'refs/heads/production'"
-            environment: "plan-production"
+          - environment: "plan-production"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             name: "production"
