@@ -20,26 +20,24 @@ jobs:
     strategy:
       matrix:
         isProduction: 
-          - ${{github.ref == 'refs/heads/production'}}
-        isStaging:
-          - ${{github.ref == 'refs/heads/master'}}
-
+          - ${{ github.ref == 'refs/heads/production' || github.ref == 'refs/heads/master' }}
         include:
           - environment: "plan-staging"
+            isProduction: "github.ref == 'refs/heads/master'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
           - environment: "plan-production"
+            isProduction: "github.ref == 'refs/heads/production'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
         exclude:
-          - isProduction: "github.ref == 'refs/heads/production'"
-          - isStaging: "github.ref == 'refs/heads/master'"
+          - isProduction: ["github.ref == 'refs/heads/production', github.ref == 'refs/heads/master'"]
               
 
     environment:
