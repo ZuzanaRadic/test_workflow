@@ -21,10 +21,11 @@ jobs:
       matrix:
         isProduction: 
           - ${{github.ref == 'refs/heads/production'}}
+        isStaging:
+          - ${{github.ref == 'refs/heads/master'}}
 
         include:
           - environment: "plan-staging"
-            isProduction: "false"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             name: "staging"
@@ -38,6 +39,8 @@ jobs:
             project: "test"
         exclude:
           - isProduction: "github.ref == 'refs/heads/production'"
+          - isStaging: "github.ref == 'refs/heads/master'"
+              
 
     environment:
       name: ${{matrix.environment}}
