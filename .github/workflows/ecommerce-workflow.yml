@@ -26,6 +26,7 @@ jobs:
       matrix:
         isProduction:
           - ${{ github.ref == 'refs/heads/production' }}
+        environment: [ "plan-staging", "plan-production"]
         include:
           - aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
