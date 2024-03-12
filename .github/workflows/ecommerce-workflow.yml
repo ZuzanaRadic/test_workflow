@@ -42,6 +42,8 @@ jobs:
             environment: "plan-production"
           - isProduction: true
             environment: "plan-staging"
+          - isProduction: "github.ref == 'refs/heads/production'"
+            environment: "plan-staging"
 
     environment:
       name: ${{matrix.environment}}
