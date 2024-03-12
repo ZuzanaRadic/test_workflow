@@ -30,6 +30,7 @@ jobs:
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
           - environment: "plan-production"
+            isProduction: "github.ref == 'refs/heads.production'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             name: "production"
