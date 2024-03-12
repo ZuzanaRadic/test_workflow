@@ -14,15 +14,11 @@ jobs:
   plan:
     strategy:
       matrix:
-        is_production: 
-          - ${{ github.ref == 'refs/heads/production' }}
         is_staging: 
           - ${{ github.ref == 'refs/heads/master' }}
 
         include:
           - plan_name: "Production Plan"
-            is_production: true
-            is_staging: false
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: plan-production
@@ -30,8 +26,6 @@ jobs:
             name: "production"
             project: "test"
           - plan_name: "Staging Plan"
-            is_production: false
-            is_staging: true
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: plan-staging
@@ -40,7 +34,6 @@ jobs:
             project: "test"
           
             exclude:
-            - is_production: ${{ github.ref == 'refs/heads/production' }}
             - is_staging: ${{ github.ref == 'refs/heads/master' }}
 
     name: ${{ matrix.plan_name }}
