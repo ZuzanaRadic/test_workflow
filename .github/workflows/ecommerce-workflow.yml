@@ -19,8 +19,7 @@ jobs:
       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
     strategy:
       matrix:
-        isProduction: 
-          - ${{ github.ref == 'refs/heads/production' }}
+        isProduction: [ "github.ref == 'refs/heads/production'", "github.ref == 'refs/heads/master'" ]
         environment: 
           - "plan-staging"
           - "plan-production"
@@ -41,8 +40,6 @@ jobs:
           - isProduction: false
             environment: "plan-production"
           - isProduction: true
-            environment: "plan-staging"
-          - isProduction: "github.ref == 'refs/heads/production'"
             environment: "plan-staging"
 
     environment:
