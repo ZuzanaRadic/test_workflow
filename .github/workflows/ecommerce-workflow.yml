@@ -154,7 +154,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    needs: "plan_stg"
+    needs: "plan"
     if: github.ref == 'refs/heads/master'
     environment:
       name: apply-staging
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    needs: "plan_prod"
+    needs: "plan"
     if: github.ref == 'refs/heads/production'
     environment:
       name: apply-production
