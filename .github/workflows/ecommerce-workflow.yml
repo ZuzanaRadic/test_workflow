@@ -46,6 +46,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
       AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/production'
 
     steps:
       - name: Checkout repo
