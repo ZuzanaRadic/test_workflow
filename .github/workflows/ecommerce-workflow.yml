@@ -28,31 +28,31 @@ jobs:
 
   plan:
     needs: setup_matrix
-    if: ${{ needs.setup_matrix.outputs.production_output == 'true' || needs.setup_matrix.outputs.staging_output == 'true' }}
     strategy:
       matrix:
         include:
-          - is_production: ${{ needs.setup_matrix.outputs.production_output }}
-            plan_name: "Production Plan"
+          - plan_name: "Production Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: plan-production
             bucket_name: "grocekey-terraform-state"
             name: "production"
             project: "test"
-          - is_staging: ${{ needs.setup_matrix.outputs.staging_output }}
-            plan_name: "Staging Plan"
+            if: ${{ needs.setup_matrix.outputs.production_output }}
+          - plan_name: "Staging Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: plan-staging
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
-          
+            if: ${{ needs.setup_matrix.outputs.staging_output }}
+
     name: ${{ matrix.plan_name }}
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
+    if: ${{ needs.setup_matrix.outputs.production_output  || needs.setup_matrix.outputs.staging_output  }}
     environment: ${{ matrix.environment }}
     env:
       AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
