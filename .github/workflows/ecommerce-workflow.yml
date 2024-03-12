@@ -1,14 +1,8 @@
-# pouzit v containeru image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12 # aws-cli included - s nizsi prioritou  pro me 
-# matrix build zkusit pozit s nejnizsi prioritou pro me
-      
 name: Deploy terraform
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
-      - production
 env:
   project: "test"
 
@@ -17,251 +11,81 @@ jobs:
 #---------------------------------------------------------------------------------------------------------------
 # Terraform plan jobs
 #---------------------------------------------------------------------------------------------------------------
-  plan:
-    name: "Staging and Production plan"
+
+  plan_stg:
+    name: "Staging Plan"
     runs-on: ubuntu-latest
     container:
-      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-    strategy:
-      matrix:
-        isProduction: 
-          - ${{github.ref == 'refs/heads/production'}}
-
-        include:
-          - environment: "plan-staging"
-            aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
-            aws-secret-access-key: "AWS_SECRET_KEY_STG"
-            name: "staging"
-            bucket_name: "grocekeystaging-terraform-state"
-            project: "test"
-          - environment: "plan-production"
-            aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
-            aws-secret-access-key: "AWS_SECRET_KEY_PROD"
-            name: "production"
-            bucket_name: "grocekey-terraform-state"
-            project: "test"
-        exclude:
-          - isProduction: "github.ref == 'refs/heads/production'"
-
+      image: hashicorp/terraform:1.7
+    if: github.ref == 'refs/heads/master'
     environment:
-      name: ${{matrix.environment}}
+      name: plan-staging
     env: 
-      AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
-      AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
+      name: "staging"
+      bucket_name: "grocekeystaging-terraform-state"
 
     steps:
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-        
       - name: Checkout repo
         uses: actions/checkout@v4
-          
+  
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{env.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{env.AWS_SECRET_KEY}}
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
           aws-region: eu-central-1
-                  
+          
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{matrix.project}}/terraform.tfstate" -backend-config="bucket=${{matrix.bucket_name}}"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
 
       - name: Terraform Plan
-        run: terraform plan -no-color -var-file="vars_${{matrix.name}}.tfvars" -out=plan.tfplan
+        id: plan
+        working-directory: .
+        run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan 
 
       - name: Archive plan
         uses: actions/upload-artifact@v4
         with:
-          name: "terraform-plan-${{matrix.project}}-${{matrix.name}}"
+          name: "terraform-plan-${{env.project}}-${{env.name}}"
           path: ./plan.tfplan
 
-#   plan_stg:
-#     name: "Staging Plan"
-#     runs-on: ubuntu-latest
-#     container:
-#       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-#     if: github.ref == 'refs/heads/master'
-#     environment:
-#       name: plan-staging
-#     env: 
-#       name: "staging"plan_stg:
-#     name: "Staging Plan"
-#     runs-on: ubuntu-latest
-#     container:
-#       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-#     if: github.ref == 'refs/heads/master'
-#     environment:
-#       name: plan-staging
-#     env: 
-#       name: "staging"
-#       bucket_name: "grocekeystaging-terraform-state"
-
-#     steps:
-#       - name: Setup Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
-
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-  
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
-#           aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-#           aws-region: eu-central-1
-          
-#       - name: Terraform Init
-#         run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
-#                   #key pouzit jako ma Bryan v PPUP - test/terraform.tfstate - jmeno komponenty popripade specificke jmeno, jmeno komponety jako env promenna env.project, 
-#                   #variables budou asi treba nastavit pomoci terragruntu,
-#                   # nastavit env.name = example: staging
-#                   # env.project = example: test
-#                   # jeden bucket pro kazde prostredi, grocekeystaging-terraform-state, grocerkey-terraform-state/${env.project}/terraform.tfstate - vytvorit - jmena bucketu budou jako env
-#                   # vytvorit dynamo db table jako je jmeno bucketu se state - grocekeystaging-terraform-state-lock, grocerkey-terraform-state-lock - nastavit pouzivani zamku
-
-#       - name: Terraform Plan
-#         id: plan
-#         working-directory: .
-#         run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan   # var-file= ${env.name}.tfvars
-
-#       - name: Archive plan
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: "terraform-plan-${{env.project}}-${{env.name}}" #terraform-plan-${env.project}-${env.name}
-#           path: ./plan.tfplan
-
-#   plan_prod:
-#     name: "Production Plan"
-#     runs-on: ubuntu-latest
-#     container:
-#       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-#     if: github.ref == 'refs/heads/production'
-#     environment:
-#       name: plan-production
-#     env: 
-#       name: "production"
-#       bucket_name: "grocekey-terraform-state"
+  plan_prod:
+    name: "Production Plan"
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:1.7
+    if: github.ref == 'refs/heads/production'
+    environment:
+      name: plan-production
+    env: 
+      name: "production"
+      bucket_name: "grocekey-terraform-state"
  
-#     steps:
-#       - name: Setup Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
+          aws-region: eu-central-1
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
-#           aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-#           aws-region: eu-central-1
+      - name: Terraform Init
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
 
-#       - name: Terraform Init
-#         run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
+      - name: Terraform Plan
+        id: plan
+        working-directory: .
+        run: 
+          terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan
 
-#       - name: Terraform Plan
-#         id: plan
-#         working-directory: .
-#         run: 
-# #         echo 'plan<<EOF' >> $GITHUB_OUTPUT
-#           terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan # >> $GITHUB_OUTPUT - pro tam je a co to dela?
-# #         echo 'EOF' >> $GITHUB_OUTPUT
-
-#       - name: Archive plan
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: "terraform-plan-${{env.project}}-${{env.name}}"
-#           path: ./plan.tfplan
-
-#       bucket_name: "grocekeystaging-terraform-state"
-
-#     steps:
-#       - name: Setup Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
-
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-  
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
-#           aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-#           aws-region: eu-central-1
-          
-#       - name: Terraform Init
-#         run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
-#                   #key pouzit jako ma Bryan v PPUP - test/terraform.tfstate - jmeno komponenty popripade specificke jmeno, jmeno komponety jako env promenna env.project, 
-#                   #variables budou asi treba nastavit pomoci terragruntu,
-#                   # nastavit env.name = example: staging
-#                   # env.project = example: test
-#                   # jeden bucket pro kazde prostredi, grocekeystaging-terraform-state, grocerkey-terraform-state/${env.project}/terraform.tfstate - vytvorit - jmena bucketu budou jako env
-#                   # vytvorit dynamo db table jako je jmeno bucketu se state - grocekeystaging-terraform-state-lock, grocerkey-terraform-state-lock - nastavit pouzivani zamku
-
-#       - name: Terraform Plan
-#         id: plan
-#         working-directory: .
-#         run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan   # var-file= ${env.name}.tfvars
-
-#       - name: Archive plan
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: "terraform-plan-${{env.project}}-${{env.name}}" #terraform-plan-${env.project}-${env.name}
-#           path: ./plan.tfplan
-
-#   plan_prod:
-#     name: "Production Plan"
-#     runs-on: ubuntu-latest
-#     container:
-#       image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
-#     if: github.ref == 'refs/heads/production'
-#     environment:
-#       name: plan-production
-#     env: 
-#       name: "production"
-#       bucket_name: "grocekey-terraform-state"
- 
-#     steps:
-#       - name: Setup Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
-
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
-#           aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-#           aws-region: eu-central-1
-
-#       - name: Terraform Init
-#         run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
-
-#       - name: Terraform Plan
-#         id: plan
-#         working-directory: .
-#         run: 
-# #         echo 'plan<<EOF' >> $GITHUB_OUTPUT
-#           terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan # >> $GITHUB_OUTPUT - pro tam je a co to dela?
-# #         echo 'EOF' >> $GITHUB_OUTPUT
-
-#       - name: Archive plan
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: "terraform-plan-${{env.project}}-${{env.name}}"
-#           path: ./plan.tfplan
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "terraform-plan-${{env.project}}-${{env.name}}"
+          path: ./plan.tfplan
 
 #--------------------------------------------------------------------------------------------------------------
 # Terraform deploy jobs
@@ -270,9 +94,9 @@ jobs:
   deploy_stg:
     name: "Staging Deployment"
     runs-on: ubuntu-latest
-    needs: plan
     container:
-      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
+      image: hashicorp/terraform:1.7
+    needs: "plan_stg"
     if: github.ref == 'refs/heads/master'
     environment:
       name: apply-staging
@@ -281,11 +105,6 @@ jobs:
       bucket_name: "grocekeystaging-terraform-state"
 
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -310,9 +129,9 @@ jobs:
   deploy_prod:
     name: "Production Deployment"
     runs-on: ubuntu-latest
-    needs: plan
     container:
-      image: devopsinfra/docker-terragrunt:aws-tf-1.2.9-tg-0.38.12
+      image: hashicorp/terraform:1.7
+    needs: "plan_prod"
     if: github.ref == 'refs/heads/production'
     environment:
       name: apply-production
@@ -321,11 +140,6 @@ jobs:
       bucket_name: "grocekey-terraform-state"
   
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -345,4 +159,3 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -input=false -no-color plan.tfplan
-
