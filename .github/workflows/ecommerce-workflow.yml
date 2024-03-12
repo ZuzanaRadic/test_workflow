@@ -25,6 +25,7 @@ jobs:
           - "plan-production"
         include:
           - environment: "plan-staging"
+            isProduction: "github.ref == 'refs/heads/master'"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             name: "staging"
