@@ -38,6 +38,11 @@ jobs:
             name: "staging"
             bucket_name: "grocekeystaging-terraform-state"
             project: "test"
+          
+            exclude:
+            - is_production: ${{ github.ref == 'refs/heads/production' }}
+            - is_staging: ${{ github.ref == 'refs/heads/master' }}
+
     name: ${{ matrix.plan_name }}
     runs-on: ubuntu-latest
     container:
@@ -46,7 +51,6 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
       AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
-    if: github.ref == 'refs/heads/master' && true  || github.ref == 'refs/heads/production' && false
 
     steps:
       - name: Checkout repo
