@@ -37,9 +37,9 @@ jobs:
             bucket_name: "grocekey-terraform-state"
             project: "test"
         exclude:
-          - isProduction: false
+          - isProduction: "github.ref == 'refs/heads/master'"
             environment: "plan-production"
-          - isProduction: true
+          - isProduction: "github.ref == 'refs/heads.production'"
             environment: "plan-staging"
 
     environment:
