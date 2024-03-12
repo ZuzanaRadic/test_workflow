@@ -34,6 +34,8 @@ jobs:
             name: "production"
             bucket_name: "grocekey-terraform-state"
             project: "test"
+        exclude:
+          - isProduction: false
 
     environment:
       name: ${{matrix.environment}}
