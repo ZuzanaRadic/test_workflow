@@ -20,9 +20,7 @@ jobs:
     strategy:
       matrix:
         isProduction: [ "github.ref == 'refs/heads/production'", "github.ref == 'refs/heads/master'" ]
-        environment: 
-          - "plan-staging"
-          - "plan-production"
+        environment: [ "plan-staging", "plan-production" ]
         include:
           - environment: "plan-staging"
             isProduction: "github.ref == 'refs/heads/master'"
