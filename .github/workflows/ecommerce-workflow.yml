@@ -32,14 +32,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - plan_name: "Production Plan"
+          - is_production: ${{ needs.setup_matrix.outputs.production_output }}
+            plan_name: "Production Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
             environment: plan-production
             bucket_name: "grocekey-terraform-state"
             name: "production"
             project: "test"
-          - plan_name: "Staging Plan"
+          - is_staging: ${{ needs.setup_matrix.outputs.staging_output }}
+            plan_name: "Staging Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: plan-staging
