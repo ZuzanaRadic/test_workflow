@@ -52,7 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    if: ${{ needs.setup_matrix.outputs.production_output  || needs.setup_matrix.outputs.staging_output  }}
     environment: ${{ matrix.environment }}
     env:
       AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
