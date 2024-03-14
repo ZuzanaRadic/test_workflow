@@ -11,149 +11,143 @@ jobs:
 #---------------------------------------------------------------------------------------------------------------
 # Terraform plan jobs
 #---------------------------------------------------------------------------------------------------------------
-  setup_matrix:
-    name: "Setup Matrix"
-    runs-on: ubuntu-latest
-    outputs:
-      production_output: ${{ steps.set_production.outputs.production_output}}
-      staging_output: ${{ steps.set_staging.outputs.staging_output}}
+  # setup_matrix:
+  #   name: "Setup Matrix"
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     production_output: ${{ steps.set_production.outputs.production_output}}
+  #     staging_output: ${{ steps.set_staging.outputs.staging_output}}
 
-    steps:
-      - id: set_production
-        name: Set production output
-        run: echo "::set-output name=production_output::${{ github.ref == 'refs/heads/production' }}"
-      - id: set_staging
-        name: Set staging output
-        run: echo "::set-output name=staging_output::${{ github.ref == 'refs/heads/master' }}"
+  #   steps:
+  #     - id: set_production
+  #       name: Set production output
+  #       run: echo "::set-output name=production_output::${{ github.ref == 'refs/heads/production'}}"
+  #     - id: set_staging
+  #       name: Set staging output
+  #       run: echo "::set-output name=staging_output::${{ github.ref == 'refs/heads/master' }}"
 
-  plan:
-    needs: setup_matrix
-    strategy:
-      matrix:
-        include:
-          - plan_name: "Production Plan"
-            aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
-            aws-secret-access-key: "AWS_SECRET_KEY_STG"
-            environment: plan-production
-            bucket_name: "grocekey-terraform-state"
-            name: "production"
-            project: "test"
-            if: ${{ needs.setup_matrix.outputs.production_output }}
-          - plan_name: "Staging Plan"
-            aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
-            aws-secret-access-key: "AWS_SECRET_KEY_PROD"
-            environment: plan-staging
-            name: "staging"
-            bucket_name: "grocekeystaging-terraform-state"
-            project: "test"
-            if: ${{ needs.setup_matrix.outputs.staging_output }}
+  # plan:
+  #   needs: setup_matrix
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - plan_name: "Production Plan"
+  #           aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
+  #           aws-secret-access-key: "AWS_SECRET_KEY_STG"
+  #           environment: plan-production
+  #           bucket_name: "grocekey-terraform-state"
+  #           name: "production"
+  #           project: "test"
+  #         - plan_name: "Staging Plan"
+  #           aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
+  #           aws-secret-access-key: "AWS_SECRET_KEY_PROD"
+  #           environment: plan-staging
+  #           name: "staging"
+  #           bucket_name: "grocekeystaging-terraform-state"
+  #           project: "test"
 
-    name: ${{ matrix.plan_name }}
+  #   name: ${{ matrix.plan_name }}
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: hashicorp/terraform:1.7
+  #   environment: ${{ matrix.environment }}
+  #   env:
+  #     AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
+  #     AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
+
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v4
+          
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{env.AWS_ACCESS_KEY_ID}}
+  #         aws-secret-access-key: ${{env.AWS_SECRET_KEY}}
+  #         aws-region: eu-central-1
+                  
+  #     - name: Terraform Init
+  #       run: terraform init -backend-config="key=${{matrix.project}}/terraform.tfstate" -backend-config="bucket=${{matrix.bucket_name}}"
+
+  #     - name: Terraform Plan
+  #       run: terraform plan -no-color -var-file="vars_${{matrix.name}}.tfvars" -out=plan.tfplan
+
+  #     - name: Archive plan
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: "terraform-plan-${{matrix.project}}-${{matrix.name}}"
+  #         path: ./plan.tfplan
+
+  plan_stg:
+    name: "Staging Plan"
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    environment: ${{ matrix.environment }}
-    env:
-      AWS_ACCESS_KEY_ID: ${{vars[matrix.aws-access-key-id]}}
-      AWS_SECRET_KEY: ${{secrets[matrix.aws-secret-access-key]}}
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: plan-staging
+    env: 
+      name: "staging"
+      bucket_name: "grocekeystaging-terraform-state"
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-          
+  
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{env.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{env.AWS_SECRET_KEY}}
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
           aws-region: eu-central-1
-                  
+          
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{matrix.project}}/terraform.tfstate" -backend-config="bucket=${{matrix.bucket_name}}"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
 
       - name: Terraform Plan
-        run: terraform plan -no-color -var-file="vars_${{matrix.name}}.tfvars" -out=plan.tfplan
+        run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan 
 
       - name: Archive plan
         uses: actions/upload-artifact@v4
         with:
-          name: "terraform-plan-${{matrix.project}}-${{matrix.name}}"
+          name: "terraform-plan-${{env.project}}-${{env.name}}"
           path: ./plan.tfplan
 
-  # plan_stg:
-  #   name: "Staging Plan"
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: hashicorp/terraform:1.7
-  #   if: github.ref == 'refs/heads/master'
-  #   environment:
-  #     name: plan-staging
-  #   env: 
-  #     name: "staging"
-  #     bucket_name: "grocekeystaging-terraform-state"
-
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
-  
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_STG}}
-  #         aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_STG}}
-  #         aws-region: eu-central-1
-          
-  #     - name: Terraform Init
-  #       run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
-
-  #     - name: Terraform Plan
-  #       id: plan
-  #       working-directory: .
-  #       run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan 
-
-  #     - name: Archive plan
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: "terraform-plan-${{env.project}}-${{env.name}}"
-  #         path: ./plan.tfplan
-
-  # plan_prod:
-  #   name: "Production Plan"
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: hashicorp/terraform:1.7
-  #   if: github.ref == 'refs/heads/production'
-  #   environment:
-  #     name: plan-production
-  #   env: 
-  #     name: "production"
-  #     bucket_name: "grocekey-terraform-state"
+  plan_prod:
+    name: "Production Plan"
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:1.7
+    if: github.ref == 'refs/heads/production'
+    environment:
+      name: plan-production
+    env: 
+      name: "production"
+      bucket_name: "grocekey-terraform-state"
  
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
-  #         aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
-  #         aws-region: eu-central-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID_PROD}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY_PROD}}
+          aws-region: eu-central-1
 
-  #     - name: Terraform Init
-  #       run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
+      - name: Terraform Init
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
 
-  #     - name: Terraform Plan
-  #       id: plan
-  #       working-directory: .
-  #       run: 
-  #         terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan
+      - name: Terraform Plan
+        run: 
+          terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan
 
-  #     - name: Archive plan
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: "terraform-plan-${{env.project}}-${{env.name}}"
-  #         path: ./plan.tfplan
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "terraform-plan-${{env.project}}-${{env.name}}"
+          path: ./plan.tfplan
 
 #--------------------------------------------------------------------------------------------------------------
 # Terraform deploy jobs
@@ -164,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    needs: "plan"
+    needs: "plan_stg"
     if: github.ref == 'refs/heads/master'
     environment:
       name: apply-staging
@@ -184,7 +178,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
 
       - name: Download plan artifact
         uses: actions/download-artifact@v4
@@ -199,7 +193,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
-    needs: "plan"
+    needs: "plan_prod"
     if: github.ref == 'refs/heads/production'
     environment:
       name: apply-production
@@ -219,7 +213,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
       - name: Download plan artifact
         uses: actions/download-artifact@v4
         with:
