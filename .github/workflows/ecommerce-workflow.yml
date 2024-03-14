@@ -102,7 +102,7 @@ jobs:
           aws-region: eu-central-1
           
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamodb_table=${{env.bucket_name}}-lock"
 
       - name: Terraform Plan
         run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan 
@@ -137,7 +137,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamodb_table=${{env.bucket_name}}-lock"
 
       - name: Terraform Plan
         run: 
@@ -178,7 +178,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamodb_table=${{env.bucket_name}}-lock"
 
       - name: Download plan artifact
         uses: actions/download-artifact@v4
@@ -213,7 +213,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamo_table=${{env.bucket_name}}-lock"
+        run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamodb_table=${{env.bucket_name}}-lock"
       - name: Download plan artifact
         uses: actions/download-artifact@v4
         with:
