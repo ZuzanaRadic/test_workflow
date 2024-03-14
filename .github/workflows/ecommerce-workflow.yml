@@ -105,7 +105,7 @@ jobs:
         run: terraform init -backend-config="key=${{env.project}}/terraform.tfstate" -backend-config="bucket=${{env.bucket_name}}" -backend-config="dynamodb_table=${{env.bucket_name}}-lock"
 
       - name: Terraform Plan
-        run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan -lock=false
+        run: terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan
 
       - name: Archive plan
         uses: actions/upload-artifact@v4
@@ -141,7 +141,7 @@ jobs:
 
       - name: Terraform Plan
         run: 
-          terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan -lock=false
+          terraform plan -no-color -var-file="vars_${{env.name}}.tfvars" -out=plan.tfplan
 
       - name: Archive plan
         uses: actions/upload-artifact@v4
@@ -186,7 +186,7 @@ jobs:
           name: "terraform-plan-${{env.project}}-${{env.name}}"
 
       - name: Terraform Apply
-        run: terraform apply -input=false -no-color plan.tfplan -lock=false
+        run: terraform apply -input=false -no-color plan.tfplan
  
   deploy_prod:
     name: "Production Deployment"
@@ -220,4 +220,4 @@ jobs:
           name: "terraform-plan-${{env.project}}-${{env.name}}"
 
       - name: Terraform Apply
-        run: terraform apply -input=false -no-color plan.tfplan -lock=false
+        run: terraform apply -input=false -no-color plan.tfplan
