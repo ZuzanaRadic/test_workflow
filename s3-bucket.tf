@@ -4,7 +4,5 @@ resource "aws_s3_bucket" "example" {
   tags = {
     Name        = "My bucket"
     Environment = "${var.env_name}"
-    test        = "yes"
-    versioning  = "enabled"
   }
 }
