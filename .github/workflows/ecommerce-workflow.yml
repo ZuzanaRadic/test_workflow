@@ -17,11 +17,17 @@ jobs:
     name: "Setup Branch"
     runs-on: ubuntu-latest
     outputs:
-      setup-production-branch: ${{ steps.setup-branch.outputs.setup-branches }}
+      setup-production-branch: ${{ steps.setup-production-branch.outputs.setup-branches }}
+      setup-staging-branch: ${{ steps.setup-staging-branch.outputs.setup-branches }}
     steps:
-      - id: setup-branch
+      - id: setup-production-branch
         name: Set output
-        run: echo "::set-output name=setup-branches::{\"inlude\":${{ github.ref == 'refs/heads/production'}}, ${{github.ref == 'refs/heads/master'}}}"
+        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production'}}"
+      - id: setup-staging-branch
+        name: Set output
+        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/master'}}"
+      
+
 
   plan:
     needs: setup-branches
@@ -35,6 +41,7 @@ jobs:
             bucket_name: "testproduction-terraform-state"
             name: "production"
             project: "test"
+            if: ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}}
           - plan_name: "Staging Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
@@ -42,10 +49,11 @@ jobs:
             bucket_name: "teststaging-terraform-state"
             name: "staging"
             project: "test"
+            if: ${{fromJson(needs.setup-branches.outputs.setup-staging-branch)}}
             
 
     name: ${{ matrix.plan_name}}
-    if: ${{ needs.setup-branches.outputs.setup-branches }}
+    if: ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}} || ${{fromJson(needs.setup-branches.outputs.setup-staging-branch)}}
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
