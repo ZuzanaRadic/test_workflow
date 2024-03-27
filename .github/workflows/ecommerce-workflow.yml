@@ -21,7 +21,7 @@ jobs:
     steps:
       - id: setup-branch
         name: Set output
-        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production' != github.ref == 'refs/heads/master'}}"
+        run: echo "::set-output name=setup-branches::{\"inlude\":${{ github.ref == 'refs/heads/production'}}, ${{github.ref == 'refs/heads/master'}}}"
 
   plan:
     needs: setup-branches
