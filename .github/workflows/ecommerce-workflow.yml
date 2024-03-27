@@ -14,13 +14,13 @@ jobs:
 #---------------------------------------------------------------------------------------------------------------
   
   setup-branches:
-    name: "Setup Production Branch"
+    name: "Setup Branch"
     runs-on: ubuntu-latest
     outputs:
       setup-production-branch: ${{ steps.setup-production-branch.outputs.setup-branches }}
     steps:
       - id: setup-production-branch
-        name: Set production output
+        name: Set output
         run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production'}}"
       
 
