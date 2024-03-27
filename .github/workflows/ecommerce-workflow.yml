@@ -53,6 +53,7 @@ jobs:
             
 
     name: ${{ matrix.plan_name}}
+    if: ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}} || ${{fromJson(needs.setup-branches.outputs.setup-staging-branch)}}
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
