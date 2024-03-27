@@ -45,7 +45,7 @@ jobs:
             
 
     name: ${{ matrix.plan_name}}
-    if: ${{ needs.setup-branches.outputs.setup-branches == 'true'}}
+    if: ${{ needs.setup-branches.outputs.setup-branches }}
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
