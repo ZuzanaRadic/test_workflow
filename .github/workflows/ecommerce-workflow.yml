@@ -34,7 +34,7 @@ jobs:
             aws-access-key-id: "AWS_ACCESS_KEY_ID_PROD"
             aws-secret-access-key: "AWS_SECRET_KEY_PROD"
             environment: plan-production
-            bucket_name: "test-terraform-state"
+            bucket_name: "testproduction-terraform-state"
             name: "production"
             project: "test"
             ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}}: true
