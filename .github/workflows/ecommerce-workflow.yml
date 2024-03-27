@@ -18,10 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       setup-production-branch: ${{ steps.setup-production-branch.outputs.setup-branches }}
+      setup-staging-branch: ${{ steps.setup-staging-branch.outputs.setup-branches }}
     steps:
       - id: setup-production-branch
         name: Set output
         run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production'}}"
+      - id: setup-staging-branch
+        name: Set output
+        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/master'}}"
       
 
 
@@ -37,7 +41,7 @@ jobs:
             bucket_name: "testproduction-terraform-state"
             name: "production"
             project: "test"
-            ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}}: true
+            if: ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}}
           - plan_name: "Staging Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
@@ -45,7 +49,8 @@ jobs:
             bucket_name: "teststaging-terraform-state"
             name: "staging"
             project: "test"
-            ${{fromJson(needs.setup-branches.outputs.setup-production-branch)}}: false
+            if: ${{fromJson(needs.setup-branches.outputs.setup-staging-branch)}}
+            
 
     name: ${{ matrix.plan_name}}
     runs-on: ubuntu-latest
