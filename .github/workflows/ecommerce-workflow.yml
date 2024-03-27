@@ -21,7 +21,7 @@ jobs:
     steps:
       - id: setup-branch
         name: Set output
-        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production'}}"
+        run: echo "::set-output name=setup-branches::${{ github.ref == 'refs/heads/production' || github.ref == 'refs/heads/master'}}"
 
   plan:
     needs: setup-branches
@@ -35,7 +35,6 @@ jobs:
             bucket_name: "testproduction-terraform-state"
             name: "production"
             project: "test"
-            ${{fromJson(needs.setup-branches.outputs.setup-branch)}}: true
           - plan_name: "Staging Plan"
             aws-access-key-id: "AWS_ACCESS_KEY_ID_STG"
             aws-secret-access-key: "AWS_SECRET_KEY_STG"
@@ -43,11 +42,10 @@ jobs:
             bucket_name: "teststaging-terraform-state"
             name: "staging"
             project: "test"
-            ${{fromJson(needs.setup-branches.outputs.setup-branch)}}: false
             
 
     name: ${{ matrix.plan_name}}
-    if: ${{fromJson(needs.setup-branches.outputs.setup-branch)}}
+    if: ${{ needs.setup-branches.outputs.setup-branches == 'true'}}
     runs-on: ubuntu-latest
     container:
       image: hashicorp/terraform:1.7
