@@ -20,9 +20,9 @@ jobs:
       staging: ${{ steps.setup_staging.outputs.staging }}
     steps:
       -id: "setup_production"
-       run: echo "::set-output name=production::{\"include\":github.ref == 'refs/heads/production'}"
+       run: echo "::set-output name=production::${{github.ref == 'refs/heads/production'}}"
       -id: "setup_staging"
-       run: echo "::set-output name=staging::{\"include\":github.ref == 'refs/heads/master'}"
+       run: echo "::set-output name=staging::${{github.ref == 'refs/heads/master'}}"
   plan:
     strategy:
       matrix: 
